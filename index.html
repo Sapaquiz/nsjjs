@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Shorts - Video App</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+}
+
+.app {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    background: #000;
+}
+
+/* VIDEO FEED */
+.feed {
+    width: 100%;
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scrollbar-width: none;
+}
+
+.feed::-webkit-scrollbar {
+    display: none;
+}
+
+.video-card {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    scroll-snap-align: start;
+    background: #111;
+    overflow: hidden;
+}
+
+.video-card video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* TOP */
+.top {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 65px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    background: linear-gradient(rgba(0,0,0,.5), transparent);
+}
+
+.top-title {
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.top-title span {
+    opacity: .55;
+    margin-left: 18px;
+}
+
+/* VIDEO INFO */
+.info {
+    position: absolute;
+    bottom: 85px;
+    left: 15px;
+    right: 80px;
+    color: white;
+    z-index: 5;
+    text-shadow: 0 1px 3px #000;
+}
+
+.username {
+    font-size: 17px;
+    font-weight: bold;
+    margin-bottom: 9px;
+}
+
+.follow {
+    margin-left: 8px;
+    border: 1px solid white;
+    border-radius: 4px;
+    background: transparent;
+    color: white;
+    padding: 3px 8px;
+}
+
+.caption {
+    font-size: 15px;
+    line-height: 21px;
+    margin-bottom: 10px;
+}
+
+.music {
+    font-size: 14px;
+}
+
+/* SIDE BUTTONS */
+.actions {
+    position: absolute;
+    right: 10px;
+    bottom: 105px;
+    width: 58px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    z-index: 10;
+}
+
+.action {
+    border: 0;
+    background: transparent;
+    color: white;
+    text-align: center;
+    cursor: pointer;
+}
+
+.action-icon {
+    font-size: 30px;
+    display: block;
+    filter: drop-shadow(0 1px 2px #000);
+}
+
+.action-count {
+    font-size: 12px;
+    display: block;
+    margin-top: 3px;
+}
+
+.like.active .action-icon {
+    color: #ff2d55;
+}
+
+.profile-pic {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid white;
+    object-fit: cover;
+}
+
+/* NAVIGATION */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 62px;
+    background: rgba(0,0,0,.94);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 50;
+    color: white;
+}
+
+.nav-item {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 11px;
+    text-align: center;
+}
+
+.nav-icon {
+    display: block;
+    font-size: 22px;
+    margin-bottom: 3px;
+}
+
+.upload-btn {
+    background: white;
+    color: black;
+    width: 42px;
+    height: 30px;
+    border-radius: 9px;
+    font-size: 25px;
+    line-height: 27px;
+}
+
+/* SEARCH */
+.search-screen,
+.profile-screen,
+.comments-screen,
+.upload-screen {
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    z-index: 100;
+    display: none;
+    color: #111;
+}
+
+.screen-header {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 0 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+.back {
+    border: 0;
+    background: none;
+    font-size: 26px;
+}
+
+.search-box {
+    flex: 1;
+    background: #eee;
+    border: none;
+    border-radius: 22px;
+    padding: 12px 16px;
+    font-size: 15px;
+    outline: none;
+}
+
+.search-results {
+    padding: 20px;
+}
+
+.result {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+}
+
+.result img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+/* COMMENTS */
+.comment-list {
+    height: calc(100vh - 120px);
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.comment {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.comment img {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+}
+
+.comment strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.comment-input {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 12px;
+    display: flex;
+    gap: 8px;
+    border-top: 1px solid #ddd;
+    background: white;
+}
+
+.comment-input input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 22px;
+}
+
+.comment-input button {
+    border: none;
+    background: #111;
+    color: white;
+    border-radius: 20px;
+    padding: 0 18px;
+}
+
+/* PROFILE */
+.profile-content {
+    padding: 30px 20px;
+    text-align: center;
+}
+
+.big-profile {
+    width: 95px;
+    height: 95px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-content h2 {
+    margin: 12px 0 5px;
+}
+
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 35px;
+    margin: 25px 0;
+}
+
+.stats strong {
+    display: block;
+    font-size: 20px;
+}
+
+/* UPLOAD */
+.upload-content {
+    padding: 25px;
+}
+
+.upload-content input,
+.upload-content textarea {
+    width: 100%;
+    padding: 13px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.upload-content textarea {
+    height: 100px;
+}
+
+.primary {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    background: #111;
+    color: white;
+    font-size: 16px;
+}
+
+/* PLAY INDICATOR */
+.play-indicator {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 60px;
+    opacity: 0;
+    pointer-events: none;
+    transition: .2s;
+}
+
+/* DESKTOP */
+@media(min-width:700px) {
+    .app {
+        width: 430px;
+        margin: auto;
+        box-shadow: 0 0 40px #222;
+    }
+
+    .bottom-nav,
+    .top {
+        width: 430px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .search-screen,
+    .profile-screen,
+    .comments-screen,
+    .upload-screen {
+        width: 430px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <div class="top">
+        <div class="top-title">
+            Following <span>For You</span>
+        </div>
+    </div>
+
+    <main class="feed" id="feed">
+
+        <!-- VIDEO 1 -->
+        <section class="video-card">
+            <video
+                src="https://cdn.coverr.co/videos/coverr-a-woman-walking-in-the-city-1572/1080p.mp4"
+                loop
+                muted
+                playsinline>
+            </video>
+
+            <div class="play-indicator">▶</div>
+
+            <div class="info">
+                <div class="username">
+                    @sampleuser
+                    <button class="follow">Follow</button>
+                </div>
+
+                <div class="caption">
+                    Welcome to my first video! 🚀
+                    #fyp #viral #shortvideo
+                </div>
+
+                <div class="music">🎵 Original sound - sampleuser</div>
+            </div>
+
+            <div class="actions">
+                <img class="profile-pic"
+                     src="https://i.pravatar.cc/100?img=12">
+
+                <button class="action like">
+                    <span class="action-icon">♥</span>
+                    <span class="action-count">12.4K</span>
+                </button>
+
+                <button class="action comment-btn">
+                    <span class="action-icon">💬</span>
+                    <span class="action-count">320</span>
+                </button>
+
+                <button class="action share-btn">
+                    <span class="action-icon">↗</span>
+                    <span class="action-count">Share</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- VIDEO 2 -->
+        <section class="video-card">
+            <video
+                src="https://cdn.coverr.co/videos/coverr-a-woman-using-a-phone-1573/1080p.mp4"
+                loop
+                muted
+                playsinline>
+            </video>
+
+            <div class="play-indicator">▶</div>
+
+            <div class="info">
+                <div class="username">
+                    @creator02
+                    <button class="follow">Follow</button>
+                </div>
+
+                <div class="caption">
+                    Just enjoying the moment ✨
+                    What do you think?
+                </div>
+
+                <div class="music">🎵 Chill vibes - Original sound</div>
+            </div>
+
+            <div class="actions">
+                <img class="profile-pic"
+                     src="https://i.pravatar.cc/100?img=32">
+
+                <button class="action like">
+                    <span class="action-icon">♥</span>
+                    <span class="action-count">8,921</span>
+                </button>
+
+                <button class="action comment-btn">
+                    <span class="action-icon">💬</span>
+                    <span class="action-count">152</span>
+                </button>
+
+                <button class="action share-btn">
+                    <span class="action-icon">↗</span>
+                    <span class="action-count">Share</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- VIDEO 3 -->
+        <section class="video-card">
+            <video
+                src="https://cdn.coverr.co/videos/coverr-man-riding-a-bicycle-1575/1080p.mp4"
+                loop
+                muted
+                playsinline>
+            </video>
+
+            <div class="play-indicator">▶</div>
+
+            <div class="info">
+                <div class="username">
+                    @creator03
+                    <button class="follow">Follow</button>
+                </div>
+
+                <div class="caption">
+                    New day, new adventure 🌎
+                    #travel #life
+                </div>
+
+                <div class="music">🎵 Adventure sound</div>
+            </div>
+
+            <div class="actions">
+                <img class="profile-pic"
+                     src="https://i.pravatar.cc/100?img=47">
+
+                <button class="action like">
+                    <span class="action-icon">♥</span>
+                    <span class="action-count">21.2K</span>
+                </button>
+
+                <button class="action comment-btn">
+                    <span class="action-icon">💬</span>
+                    <span class="action-count">641</span>
+                </button>
+
+                <button class="action share-btn">
+                    <span class="action-icon">↗</span>
+                    <span class="action-count">Share</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+
+        <button class="nav-item" onclick="goHome()">
+            <span class="nav-icon">⌂</span>
+            Home
+        </button>
+
+        <button class="nav-item" onclick="openSearch()">
+            <span class="nav-icon">⌕</span>
+            Search
+        </button>
+
+        <button class="nav-item" onclick="openUpload()">
+            <span class="upload-btn">+</span>
+        </button>
+
+        <button class="nav-item" onclick="alert('Inbox coming soon!')">
+            <span class="nav-icon">✉</span>
+            Inbox
+        </button>
+
+        <button class="nav-item" onclick="openProfile()">
+            <span class="nav-icon">♙</span>
+            Profile
+        </button>
+
+    </nav>
+
+</div>
+
+
+<!-- SEARCH SCREEN -->
+<div class="search-screen" id="searchScreen">
+
+    <div class="screen-header">
+        <button class="back" onclick="closeScreens()">‹</button>
+        <input
+            class="search-box"
+            id="searchInput"
+            placeholder="Search"
+            oninput="searchUsers()">
+    </div>
+
+    <div class="search-results" id="searchResults">
+        <p>Search for creators or videos.</p>
+    </div>
+
+</div>
+
+
+<!-- PROFILE SCREEN -->
+<div class="profile-screen" id="profileScreen">
+
+    <div class="screen-header">
+        <button class="back" onclick="closeScreens()">‹</button>
+        <strong>Profile</strong>
+    </div>
+
+    <div class="profile-content">
+
+        <img
+            class="big-profile"
+            src="https://i.pravatar.cc/200?img=12">
+
+        <h2>@sampleuser</h2>
+        <p>My short-video profile 🚀</p>
+
+        <div class="stats">
+            <div>
+                <strong>128</strong>
+                Following
+            </div>
+
+            <div>
+                <strong>14.8K</strong>
+                Followers
+            </div>
+
+            <div>
+                <strong>245K</strong>
+                Likes
+            </div>
+        </div>
+
+        <button class="primary">
+            Edit Profile
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- COMMENTS SCREEN -->
+<div class="comments-screen" id="commentsScreen">
+
+    <div class="screen-header">
+        <button class="back" onclick="closeScreens()">‹</button>
+        <strong>Comments</strong>
+    </div>
+
+    <div class="comment-list" id="commentList">
+
+        <div class="comment">
+            <img src="https://i.pravatar.cc/80?img=5">
+            <div>
+                <strong>@alex</strong>
+                Nice video! 🔥
+            </div>
+        </div>
+
+        <div class="comment">
+            <img src="https://i.pravatar.cc/80?img=8">
+            <div>
+                <strong>@maria</strong>
+                This is awesome ❤️
+            </div>
+        </div>
+
+        <div class="comment">
+            <img src="https://i.pravatar.cc/80?img=15">
+            <div>
+                <strong>@john</strong>
+                Keep going!
+            </div>
+        </div>
+
+    </div>
+
+    <div class="comment-input">
+        <input id="commentInput" placeholder="Add a comment...">
+        <button onclick="addComment()">Post</button>
+    </div>
+
+</div>
+
+
+<!-- UPLOAD SCREEN -->
+<div class="upload-screen" id="uploadScreen">
+
+    <div class="screen-header">
+        <button class="back" onclick="closeScreens()">‹</button>
+        <strong>Create</strong>
+    </div>
+
+    <div class="upload-content">
+
+        <h2 style="margin-bottom:20px;">
+            Upload a Video
+        </h2>
+
+        <input
+            type="file"
+            id="videoFile"
+            accept="video/*">
+
+        <textarea
+            id="captionInput"
+            placeholder="Write a caption..."></textarea>
+
+        <button
+            class="primary"
+            onclick="uploadDemo()">
+            Post Video
+        </button>
+
+        <p style="margin-top:15px;color:#777;font-size:13px;">
+            Demo mode: uploaded videos are added only to this
+            browser session.
+        </p>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* -----------------------------
+   VIDEO AUTOPLAY
+----------------------------- */
+
+const videos = document.querySelectorAll("video");
+
+const observer = new IntersectionObserver(
+    entries => {
+        entries.forEach(entry => {
+
+            const video = entry.target;
+
+            if (entry.isIntersecting) {
+                videos.forEach(v => {
+                    if (v !== video) {
+                        v.pause();
+                    }
+                });
+
+                video.play().catch(() => {});
+            } else {
+                video.pause();
+            }
+
+        });
+    },
+    { threshold: 0.7 }
+);
+
+videos.forEach(video => observer.observe(video));
+
+
+/* -----------------------------
+   LIKE BUTTON
+----------------------------- */
+
+document.querySelectorAll(".like").forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        button.classList.toggle("active");
+
+        const count = button.querySelector(".action-count");
+
+        if (button.classList.contains("active")) {
+            count.textContent = "Liked";
+        } else {
+            count.textContent = "Like";
+        }
+
+    });
+
+});
+
+
+/* -----------------------------
+   COMMENTS
+----------------------------- */
+
+let selectedComments = document.getElementById("commentsScreen");
+
+document.querySelectorAll(".comment-btn").forEach(button => {
+
+    button.addEventListener("click", () => {
+        selectedComments.style.display = "block";
+    });
+
+});
+
+
+function addComment() {
+
+    const input = document.getElementById("commentInput");
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    const commentList = document.getElementById("commentList");
+
+    const comment = document.createElement("div");
+
+    comment.className = "comment";
+
+    comment.innerHTML = `
+        <img src="https://i.pravatar.cc/80?img=12">
+        <div>
+            <strong>@you</strong>
+            ${escapeHTML(text)}
+        </div>
+    `;
+
+    commentList.appendChild(comment);
+
+    input.value = "";
+
+    commentList.scrollTop = commentList.scrollHeight;
+}
+
+
+/* -----------------------------
+   SHARE
+----------------------------- */
+
+document.querySelectorAll(".share-btn").forEach(button => {
+
+    button.addEventListener("click", async () => {
+
+        if (navigator.share) {
+
+            try {
+                await navigator.share({
+                    title: "Check out this video!",
+                    text: "Watch this short video!"
+                });
+
+            } catch(e) {}
+
+        } else {
+
+            alert("Video link copied!");
+
+        }
+
+    });
+
+});
+
+
+/* -----------------------------
+   FOLLOW
+----------------------------- */
+
+document.querySelectorAll(".follow").forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        if (button.textContent === "Follow") {
+            button.textContent = "Following";
+            button.style.background = "white";
+            button.style.color = "black";
+        } else {
+            button.textContent = "Follow";
+            button.style.background = "transparent";
+            button.style.color = "white";
+        }
+
+    });
+
+});
+
+
+/* -----------------------------
+   SEARCH
+----------------------------- */
+
+function openSearch() {
+
+    document.getElementById("searchScreen").style.display = "block";
+
+    setTimeout(() => {
+        document.getElementById("searchInput").focus();
+    }, 100);
+
+}
+
+
+function searchUsers() {
+
+    const value =
+        document.getElementById("searchInput").value
+        .toLowerCase();
+
+    const results =
+        document.getElementById("searchResults");
+
+    if (!value) {
+
+        results.innerHTML =
+            "<p>Search for creators or videos.</p>";
+
+        return;
+
+    }
+
+    const users = [
+        ["@sampleuser", "14.8K followers", 12],
+        ["@creator02", "8.2K followers", 32],
+        ["@creator03", "21.4K followers", 47],
+        ["@travelcreator", "45.1K followers", 20]
+    ];
+
+    const filtered = users.filter(user =>
+        user[0].includes(value)
+    );
+
+    if (!filtered.length) {
+
+        results.innerHTML =
+            "<p>No results found.</p>";
+
+        return;
+
+    }
+
+    results.innerHTML = filtered.map(user => `
+
+        <div class="result">
+            <img src="https://i.pravatar.cc/100?img=${user[2]}">
+            <div>
+                <strong>${user[0]}</strong>
+                <p>${user[1]}</p>
+            </div>
+        </div>
+
+    `).join("");
+
+}
+
+
+/* -----------------------------
+   PROFILE
+----------------------------- */
+
+function openProfile() {
+    document.getElementById("profileScreen").style.display = "block";
+}
+
+
+/* -----------------------------
+   UPLOAD
+----------------------------- */
+
+function openUpload() {
+    document.getElementById("uploadScreen").style.display = "block";
+}
+
+
+function uploadDemo() {
+
+    const file =
+        document.getElementById("videoFile").files[0];
+
+    const caption =
+        document.getElementById("captionInput").value;
+
+    if (!file) {
+
+        alert("Please select a video first.");
+
+        return;
+
+    }
+
+    const url = URL.createObjectURL(file);
+
+    const card = document.createElement("section");
+
+    car
